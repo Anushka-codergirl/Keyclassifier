@@ -3,91 +3,81 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Teachable Machine — Live Webcam + Upload (Auto Start)</title>
+  <title>Teachable Machine — Live Webcam + Upload (Local Model)</title>
   <style>
-    :root { --card-pad: 16px; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color: #111; }
-    body { margin:0; padding:20px; display:flex; justify-content:center; }
-    .wrap { max-width:1000px; width:100%; }
-    .card { padding:var(--card-pad); border-radius:12px; border:1px solid #e6e6e6; box-shadow:0 6px 28px rgba(0,0,0,0.04); background:white; }
-    h1 { margin:0 0 8px 0; font-size:1.25rem; }
-    .row { display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; margin-top:12px; }
-    .col { flex:1; min-width:280px; }
-    video, img#preview { width:100%; max-width:420px; border-radius:8px; background:#fafafa; border:1px dashed #ddd; object-fit:cover; }
-    .controls { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
-    button { padding:8px 12px; border-radius:8px; border:1px solid #cfcfcf; background:#f8f8f8; cursor:pointer; }
-    .pred { display:flex; justify-content:space-between; padding:8px; margin-bottom:8px; border-radius:8px; border:1px solid #f0f0f0; background:#fff; }
-    .small { font-size:0.92rem; color:#555; }
-    footer { margin-top:12px; font-size:0.85rem; color:#666; }
-    .muted { color:#777; font-size:0.9rem; }
-    .flex-between { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    :root{--pad:14px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    body{margin:20px;display:flex;justify-content:center}
+    .wrap{max-width:1000px;width:100%}
+    .card{padding:18px;border-radius:12px;border:1px solid #e6e6e6;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,0.04)}
+    h1{margin:0 0 8px 0;font-size:1.25rem}
+    .row{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
+    .col{flex:1;min-width:280px}
+    video,img{width:100%;max-width:460px;border-radius:8px;border:1px dashed #ddd;background:#fafafa;object-fit:cover}
+    .controls{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+    button{padding:8px 12px;border-radius:8px;border:1px solid #cfcfcf;background:#f8f8f8;cursor:pointer}
+    .pred{display:flex;justify-content:space-between;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #f0f0f0;background:#fff}
+    .small{font-size:0.92rem;color:#555}
+    .muted{color:#777;font-size:0.9rem}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <div class="flex-between">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div>
-          <h1>Teachable Machine — Live Webcam + Upload (Auto Start)</h1>
-          <div class="small">Model: <code>https://teachablemachine.withgoogle.com/models/5WXjJMNGM/</code></div>
+          <h1>Teachable Machine — Live Webcam + Upload (Local Model)</h1>
+          <div class="small">Model source: <code>./model/model.json</code> (serve with GitHub Pages)</div>
         </div>
         <div class="muted">Auto webcam start enabled</div>
       </div>
 
       <div class="row">
-        <!-- Left: Live webcam -->
         <div class="col">
-          <div class="small" style="margin-bottom:8px;"><strong>Live Webcam</strong> (classifies continuously)</div>
+          <div class="small"><strong>Live Webcam</strong> (classifies continuously)</div>
           <video id="webcam" autoplay playsinline muted></video>
-          <div class="controls" style="margin-top:8px;">
+          <div class="controls">
             <button id="stopCamBtn">Stop Camera</button>
             <button id="startCamBtn" disabled>Start Camera</button>
             <button id="switchBtn">Switch Camera</button>
-            <div id="camStatus" class="small" style="align-self:center;">Initializing…</div>
+            <div id="camStatus" class="small" style="align-self:center">Initializing…</div>
           </div>
-
-          <div style="margin-top:12px;">
+          <div style="margin-top:12px">
             <div class="small"><strong>Live Predictions</strong></div>
-            <div id="liveResults" style="margin-top:8px;">
-              <div class="small">Waiting for model and webcam...</div>
-            </div>
+            <div id="liveResults" style="margin-top:8px"><div class="small">Waiting for model and webcam...</div></div>
           </div>
         </div>
 
-        <!-- Right: Image upload & preview -->
         <div class="col">
-          <div class="small" style="margin-bottom:8px;"><strong>Image Upload</strong></div>
+          <div class="small"><strong>Image Upload</strong></div>
+          <!-- default preview uses your local path -->
           <img id="preview" alt="Image preview" src="/mnt/data/3706cbb5-47a7-48f0-9ea2-4f5d3c088184.png" />
-          <div class="controls" style="margin-top:8px;">
+          <div class="controls">
             <input id="imageUpload" type="file" accept="image/*" />
             <button id="predictUploadBtn" disabled>Predict Upload</button>
             <button id="clearBtn">Clear</button>
           </div>
-
-          <div style="margin-top:12px;">
+          <div style="margin-top:12px">
             <div class="small"><strong>Upload Predictions</strong></div>
-            <div id="uploadResults" style="margin-top:8px;">
-              <div class="small">Upload an image to get predictions.</div>
-            </div>
+            <div id="uploadResults" style="margin-top:8px"><div class="small">Upload an image to get predictions</div></div>
           </div>
         </div>
       </div>
 
-      <footer>
-        <div class="small">Notes: GitHub Pages uses HTTPS so webcam access will work. If the camera fails on mobile, ensure the page is opened via HTTPS and that the browser allows camera permission. The preview image above uses the uploaded local path you supplied.</div>
-      </footer>
+      <footer style="margin-top:14px" class="small muted">Make sure the `model/` folder (model.json, metadata.json, weights.bin) is in the same repo root as this page.</footer>
     </div>
   </div>
 
-  <!-- Teachable Machine image lib -->
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+  <!-- use the updated teachablemachine lib -->
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@1.1/dist/teachablemachine-image.min.js"></script>
 
   <script>
-    // Config
-    const MODEL_FOLDER = "https://teachablemachine.withgoogle.com/models/5WXjJMNGM/";
-    const MODEL_JSON = MODEL_FOLDER + "model.json";
-    const METADATA_JSON = MODEL_FOLDER + "metadata.json";
+    // -------- CONFIG: local model path --------
+    // IMPORTANT: put your model files in a folder named 'model' next to this index.html
+    const MODEL_BASE = "./model/";                 // relative path
+    const MODEL_JSON = MODEL_BASE + "model.json";
+    const METADATA_JSON = MODEL_BASE + "metadata.json";
 
-    // DOM
+    // -------- DOM ----------
     const video = document.getElementById('webcam');
     const camStatus = document.getElementById('camStatus');
     const startCamBtn = document.getElementById('startCamBtn');
@@ -101,37 +91,35 @@
     const uploadResults = document.getElementById('uploadResults');
     const clearBtn = document.getElementById('clearBtn');
 
-    // TM variables
-    let model, maxPredictions;
+    // -------- state ----------
+    let model = null;
+    let maxPredictions = 0;
     let webcamStream = null;
-    let usingFacingMode = "environment"; // start with back camera on mobile if available
+    let usingFacingMode = "environment";
     let isWebcamOn = false;
     let rafId = null;
 
-    async function initModel() {
+    // ---------- Load local model ----------
+    async function loadLocalModel() {
       try {
-        camStatus.textContent = "Loading model…";
+        camStatus.textContent = "Loading local model…";
         model = await tmImage.load(MODEL_JSON, METADATA_JSON);
         maxPredictions = model.getTotalClasses();
-        camStatus.textContent = "Model loaded — starting webcam...";
+        camStatus.textContent = `Model loaded (${maxPredictions} classes). Starting webcam...`;
         liveResults.innerHTML = `<div class="small">Model loaded (${maxPredictions} classes). Starting webcam...</div>`;
-        // After model loaded, start webcam automatically
         await startWebcam();
         runPredictionLoop();
       } catch (err) {
-        camStatus.textContent = "Model load failed — check console.";
-        console.error("Failed to load model:", err);
+        camStatus.textContent = "Failed to load local model — check model files and path (console).";
+        console.error("Model load error:", err);
       }
     }
 
-    // Start webcam (auto on page load)
+    // ---------- webcam ----------
     async function startWebcam() {
       if (isWebcamOn) return;
       try {
-        const constraints = {
-          audio: false,
-          video: { facingMode: usingFacingMode }
-        };
+        const constraints = { audio:false, video: { facingMode: usingFacingMode } };
         webcamStream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = webcamStream;
         await video.play();
@@ -140,17 +128,15 @@
         startCamBtn.disabled = true;
         stopCamBtn.disabled = false;
       } catch (err) {
-        camStatus.textContent = "Unable to access webcam (permission or device).";
+        camStatus.textContent = "Cannot access webcam (permission/device).";
         console.error("getUserMedia error:", err);
         startCamBtn.disabled = false;
         stopCamBtn.disabled = true;
       }
     }
-
     function stopWebcam() {
       if (!webcamStream) return;
-      const tracks = webcamStream.getTracks();
-      tracks.forEach(t => t.stop());
+      webcamStream.getTracks().forEach(t => t.stop());
       video.srcObject = null;
       webcamStream = null;
       isWebcamOn = false;
@@ -159,80 +145,62 @@
       stopCamBtn.disabled = true;
       if (rafId) cancelAnimationFrame(rafId);
     }
-
-    // Switch camera (front/back)
     async function switchCamera() {
       usingFacingMode = (usingFacingMode === "user") ? "environment" : "user";
       stopWebcam();
       await startWebcam();
     }
 
-    // Live prediction loop
+    // ---------- prediction loop ----------
     async function runPredictionLoop() {
       if (!model || !isWebcamOn) return;
       try {
-        const predictFrame = async () => {
-          // tmImage.predict accepts the video element directly
-          const predictions = await model.predict(video, false);
-          predictions.sort((a,b) => b.probability - a.probability);
-          // Display top 3
+        const loop = async () => {
+          const preds = await model.predict(video, false);
+          preds.sort((a,b) => b.probability - a.probability);
           liveResults.innerHTML = "";
-          predictions.slice(0,3).forEach(pred => {
-            const d = document.createElement('div');
-            d.className = "pred";
-            const name = document.createElement('div');
-            name.textContent = pred.className;
-            const conf = document.createElement('div');
-            conf.textContent = (pred.probability * 100).toFixed(1) + "%";
-            d.appendChild(name); d.appendChild(conf);
+          preds.slice(0,3).forEach(p => {
+            const d = document.createElement('div'); d.className = "pred";
+            const l = document.createElement('div'); l.textContent = p.className;
+            const c = document.createElement('div'); c.textContent = (p.probability*100).toFixed(1) + "%";
+            d.appendChild(l); d.appendChild(c);
             liveResults.appendChild(d);
           });
-          // schedule next
-          rafId = requestAnimationFrame(predictFrame);
+          rafId = requestAnimationFrame(loop);
         };
-        predictFrame();
+        loop();
       } catch (err) {
-        console.error("Prediction loop error:", err);
-        liveResults.innerHTML = `<div class="small">Prediction error.</div>`;
+        console.error("Prediction loop failed:", err);
+        liveResults.innerHTML = `<div class="small">Prediction error (see console).</div>`;
       }
     }
 
-    // Upload prediction
+    // ---------- upload prediction ----------
     imageUpload.addEventListener('change', (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      preview.src = URL.createObjectURL(file);
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      preview.src = URL.createObjectURL(f);
       predictUploadBtn.disabled = false;
-      uploadResults.innerHTML = `<div class="small">Image loaded — click Predict Upload.</div>`;
+      uploadResults.innerHTML = `<div class="small">Image loaded — click Predict Upload</div>`;
     });
-
     predictUploadBtn.addEventListener('click', async () => {
-      if (!model) {
-        uploadResults.innerHTML = `<div style="color:crimson">Model not loaded yet.</div>`;
-        return;
-      }
-      if (!preview.src) {
-        uploadResults.innerHTML = `<div style="color:crimson">No image selected.</div>`;
-        return;
-      }
+      if (!model) { uploadResults.innerHTML = `<div style="color:crimson">Model not loaded</div>`; return; }
+      if (!preview.src) { uploadResults.innerHTML = `<div style="color:crimson">No image</div>`; return; }
       uploadResults.innerHTML = `<div class="small">Predicting…</div>`;
       try {
-        const predictions = await model.predict(preview, false);
-        predictions.sort((a,b) => b.probability - a.probability);
+        const preds = await model.predict(preview, false);
+        preds.sort((a,b)=> b.probability - a.probability);
         uploadResults.innerHTML = "";
-        predictions.slice(0,5).forEach(pred => {
-          const d = document.createElement('div');
-          d.className = "pred";
-          const name = document.createElement('div');
-          name.textContent = pred.className;
-          const conf = document.createElement('div');
-          conf.textContent = (pred.probability * 100).toFixed(1) + "%";
-          d.appendChild(name); d.appendChild(conf);
+        preds.slice(0,5).forEach(p => {
+          const d = document.createElement('div'); d.className = "pred";
+          const l = document.createElement('div'); l.textContent = p.className;
+          const c = document.createElement('div'); c.textContent = (p.probability*100).toFixed(1) + "%";
+          d.appendChild(l); d.appendChild(c);
           uploadResults.appendChild(d);
         });
       } catch (err) {
         console.error("Upload prediction error:", err);
-        uploadResults.innerHTML = `<div style="color:crimson">Prediction failed.</div>`;
+        uploadResults.innerHTML = `<div style="color:crimson">Prediction failed (see console).</div>`;
       }
     });
 
@@ -243,29 +211,15 @@
       uploadResults.innerHTML = "";
     });
 
-    // Buttons
-    startCamBtn.addEventListener('click', async () => {
-      await startWebcam();
-      runPredictionLoop();
-    });
-    stopCamBtn.addEventListener('click', () => {
-      stopWebcam();
-    });
-    switchBtn.addEventListener('click', async () => {
-      await switchCamera();
-      runPredictionLoop();
-    });
+    startCamBtn.addEventListener('click', async ()=>{ await startWebcam(); runPredictionLoop(); });
+    stopCamBtn.addEventListener('click', ()=>{ stopWebcam(); });
+    switchBtn.addEventListener('click', async ()=>{ await switchCamera(); runPredictionLoop(); });
 
-    // Initialize: load model and auto-start webcam
-    (async () => {
-      // On page load, attempt to load model and start webcam automatically
-      await initModel();
-    })();
+    // init
+    (async ()=>{ await loadLocalModel(); })();
 
-    // Clean up on page unload
-    window.addEventListener('beforeunload', () => {
-      stopWebcam();
-    });
+    // cleanup
+    window.addEventListener('beforeunload', ()=>{ stopWebcam(); });
   </script>
 </body>
 </html>
