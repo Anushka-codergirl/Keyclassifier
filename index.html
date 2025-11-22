@@ -3,223 +3,139 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Teachable Machine — Live Webcam + Upload (Local Model)</title>
+  <title>Teachable Machine - Image Classifier (Upload)</title>
   <style>
-    :root{--pad:14px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    body{margin:20px;display:flex;justify-content:center}
-    .wrap{max-width:1000px;width:100%}
-    .card{padding:18px;border-radius:12px;border:1px solid #e6e6e6;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,0.04)}
-    h1{margin:0 0 8px 0;font-size:1.25rem}
-    .row{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
-    .col{flex:1;min-width:280px}
-    video,img{width:100%;max-width:460px;border-radius:8px;border:1px dashed #ddd;background:#fafafa;object-fit:cover}
-    .controls{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-    button{padding:8px 12px;border-radius:8px;border:1px solid #cfcfcf;background:#f8f8f8;cursor:pointer}
-    .pred{display:flex;justify-content:space-between;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #f0f0f0;background:#fff}
-    .small{font-size:0.92rem;color:#555}
-    .muted{color:#777;font-size:0.9rem}
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px; margin:32px auto; padding:16px; line-height:1.4; }
+    h1 { font-size:1.3rem; margin-bottom:4px; }
+    .card { border:1px solid #e6e6e6; border-radius:12px; padding:16px; box-shadow: 0 4px 14px rgba(0,0,0,0.03); }
+    .controls { display:flex; gap:8px; align-items:center; margin-top:12px; }
+    input[type=file] { display:block; }
+    #preview { max-width:360px; max-height:360px; object-fit:contain; border-radius:8px; border:1px dashed #ddd; padding:8px; background:#fafafa; }
+    #results { margin-top:12px; }
+    .pred { display:flex; justify-content:space-between; padding:6px 8px; border-radius:8px; margin-bottom:6px; background:#fff; border:1px solid #f0f0f0; }
+    .small { font-size:0.9rem; color:#666; }
+    #loader { display:inline-block; margin-left:8px; color:#666; font-size:0.9rem; }
+    footer { margin-top:18px; font-size:0.85rem; color:#666; }
+    button { padding:8px 12px; border-radius:8px; border:1px solid #ccc; background:#f7f7f7; cursor:pointer; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+  <div class="card">
+    <h1>Teachable Machine — Image Classifier (Upload)</h1>
+    <div class="small">Upload an image, and get predictions from your model.</div>
+
+    <div style="margin-top:14px;">
+      <div class="small" style="margin-bottom:8px;">
+        <strong>Model URL:</strong><br>
+        <code>https://teachablemachine.withgoogle.com/models/zPallQv-b/</code>
+      </div>
+
+      <div class="controls">
+        <input id="imageUpload" type="file" accept="image/*" />
+        <button id="loadModelBtn">Load Model</button>
+        <span id="loader" style="display:none;">Loading model…</span>
+      </div>
+
+      <div style="display:flex; gap:18px; margin-top:16px; flex-wrap:wrap;">
         <div>
-          <h1>Teachable Machine — Live Webcam + Upload (Local Model)</h1>
-          <div class="small">Model source: <code>./model/model.json</code> (serve with GitHub Pages)</div>
+          <img id="preview" alt="Image preview" src="" />
         </div>
-        <div class="muted">Auto webcam start enabled</div>
-      </div>
-
-      <div class="row">
-        <div class="col">
-          <div class="small"><strong>Live Webcam</strong> (classifies continuously)</div>
-          <video id="webcam" autoplay playsinline muted></video>
-          <div class="controls">
-            <button id="stopCamBtn">Stop Camera</button>
-            <button id="startCamBtn" disabled>Start Camera</button>
-            <button id="switchBtn">Switch Camera</button>
-            <div id="camStatus" class="small" style="align-self:center">Initializing…</div>
-          </div>
-          <div style="margin-top:12px">
-            <div class="small"><strong>Live Predictions</strong></div>
-            <div id="liveResults" style="margin-top:8px"><div class="small">Waiting for model and webcam...</div></div>
-          </div>
-        </div>
-
-        <div class="col">
-          <div class="small"><strong>Image Upload</strong></div>
-          <!-- default preview uses your local path -->
-          <img id="preview" alt="Image preview" src="/mnt/data/3706cbb5-47a7-48f0-9ea2-4f5d3c088184.png" />
-          <div class="controls">
-            <input id="imageUpload" type="file" accept="image/*" />
-            <button id="predictUploadBtn" disabled>Predict Upload</button>
-            <button id="clearBtn">Clear</button>
-          </div>
-          <div style="margin-top:12px">
-            <div class="small"><strong>Upload Predictions</strong></div>
-            <div id="uploadResults" style="margin-top:8px"><div class="small">Upload an image to get predictions</div></div>
+        <div style="flex:1; min-width:260px;">
+          <div id="results">
+            <div class="small">Predictions will appear here.</div>
           </div>
         </div>
       </div>
 
-      <footer style="margin-top:14px" class="small muted">Make sure the `model/` folder (model.json, metadata.json, weights.bin) is in the same repo root as this page.</footer>
+      <div style="margin-top:12px;">
+        <button id="predictBtn" disabled>Predict</button>
+        <button id="clearBtn">Clear</button>
+      </div>
+
+      <footer>
+        Copy this HTML to any static host like GitHub Pages, Netlify, or embed in Google Sites via an iframe.
+      </footer>
     </div>
   </div>
 
-  <!-- use the updated teachablemachine lib -->
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@1.1/dist/teachablemachine-image.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
   <script>
-    // -------- CONFIG: local model path --------
-    // IMPORTANT: put your model files in a folder named 'model' next to this index.html
-    const MODEL_BASE = "./model/";                 // relative path
-    const MODEL_JSON = MODEL_BASE + "model.json";
-    const METADATA_JSON = MODEL_BASE + "metadata.json";
+    const modelURL = "https://teachablemachine.withgoogle.com/models/zPallQv-b/";
+    let model, maxPredictions;
 
-    // -------- DOM ----------
-    const video = document.getElementById('webcam');
-    const camStatus = document.getElementById('camStatus');
-    const startCamBtn = document.getElementById('startCamBtn');
-    const stopCamBtn = document.getElementById('stopCamBtn');
-    const switchBtn = document.getElementById('switchBtn');
-    const liveResults = document.getElementById('liveResults');
-
-    const preview = document.getElementById('preview');
     const imageUpload = document.getElementById('imageUpload');
-    const predictUploadBtn = document.getElementById('predictUploadBtn');
-    const uploadResults = document.getElementById('uploadResults');
+    const preview = document.getElementById('preview');
+    const resultsDiv = document.getElementById('results');
+    const predictBtn = document.getElementById('predictBtn');
     const clearBtn = document.getElementById('clearBtn');
+    const loadModelBtn = document.getElementById('loadModelBtn');
+    const loader = document.getElementById('loader');
 
-    // -------- state ----------
-    let model = null;
-    let maxPredictions = 0;
-    let webcamStream = null;
-    let usingFacingMode = "environment";
-    let isWebcamOn = false;
-    let rafId = null;
-
-    // ---------- Load local model ----------
-    async function loadLocalModel() {
+    async function loadModel() {
+      loader.style.display = 'inline-block';
+      predictBtn.disabled = true;
       try {
-        camStatus.textContent = "Loading local model…";
-        model = await tmImage.load(MODEL_JSON, METADATA_JSON);
+        const modelURLjson = modelURL + "model.json";
+        const metadataURL = modelURL + "metadata.json";
+        model = await tmImage.load(modelURLjson, metadataURL);
         maxPredictions = model.getTotalClasses();
-        camStatus.textContent = `Model loaded (${maxPredictions} classes). Starting webcam...`;
-        liveResults.innerHTML = `<div class="small">Model loaded (${maxPredictions} classes). Starting webcam...</div>`;
-        await startWebcam();
-        runPredictionLoop();
+        loader.style.display = 'none';
+        predictBtn.disabled = false;
+        resultsDiv.innerHTML = `<div class="small">Loaded model with ${maxPredictions} classes.</div>`;
       } catch (err) {
-        camStatus.textContent = "Failed to load local model — check model files and path (console).";
-        console.error("Model load error:", err);
+        loader.style.display = 'none';
+        resultsDiv.innerHTML = `<div style="color:red">Error loading model — check console.</div>`;
+        console.error(err);
       }
     }
 
-    // ---------- webcam ----------
-    async function startWebcam() {
-      if (isWebcamOn) return;
-      try {
-        const constraints = { audio:false, video: { facingMode: usingFacingMode } };
-        webcamStream = await navigator.mediaDevices.getUserMedia(constraints);
-        video.srcObject = webcamStream;
-        await video.play();
-        isWebcamOn = true;
-        camStatus.textContent = "Webcam running";
-        startCamBtn.disabled = true;
-        stopCamBtn.disabled = false;
-      } catch (err) {
-        camStatus.textContent = "Cannot access webcam (permission/device).";
-        console.error("getUserMedia error:", err);
-        startCamBtn.disabled = false;
-        stopCamBtn.disabled = true;
-      }
-    }
-    function stopWebcam() {
-      if (!webcamStream) return;
-      webcamStream.getTracks().forEach(t => t.stop());
-      video.srcObject = null;
-      webcamStream = null;
-      isWebcamOn = false;
-      camStatus.textContent = "Webcam stopped";
-      startCamBtn.disabled = false;
-      stopCamBtn.disabled = true;
-      if (rafId) cancelAnimationFrame(rafId);
-    }
-    async function switchCamera() {
-      usingFacingMode = (usingFacingMode === "user") ? "environment" : "user";
-      stopWebcam();
-      await startWebcam();
-    }
-
-    // ---------- prediction loop ----------
-    async function runPredictionLoop() {
-      if (!model || !isWebcamOn) return;
-      try {
-        const loop = async () => {
-          const preds = await model.predict(video, false);
-          preds.sort((a,b) => b.probability - a.probability);
-          liveResults.innerHTML = "";
-          preds.slice(0,3).forEach(p => {
-            const d = document.createElement('div'); d.className = "pred";
-            const l = document.createElement('div'); l.textContent = p.className;
-            const c = document.createElement('div'); c.textContent = (p.probability*100).toFixed(1) + "%";
-            d.appendChild(l); d.appendChild(c);
-            liveResults.appendChild(d);
-          });
-          rafId = requestAnimationFrame(loop);
-        };
-        loop();
-      } catch (err) {
-        console.error("Prediction loop failed:", err);
-        liveResults.innerHTML = `<div class="small">Prediction error (see console).</div>`;
-      }
-    }
-
-    // ---------- upload prediction ----------
     imageUpload.addEventListener('change', (e) => {
-      const f = e.target.files && e.target.files[0];
-      if (!f) return;
-      preview.src = URL.createObjectURL(f);
-      predictUploadBtn.disabled = false;
-      uploadResults.innerHTML = `<div class="small">Image loaded — click Predict Upload</div>`;
-    });
-    predictUploadBtn.addEventListener('click', async () => {
-      if (!model) { uploadResults.innerHTML = `<div style="color:crimson">Model not loaded</div>`; return; }
-      if (!preview.src) { uploadResults.innerHTML = `<div style="color:crimson">No image</div>`; return; }
-      uploadResults.innerHTML = `<div class="small">Predicting…</div>`;
-      try {
-        const preds = await model.predict(preview, false);
-        preds.sort((a,b)=> b.probability - a.probability);
-        uploadResults.innerHTML = "";
-        preds.slice(0,5).forEach(p => {
-          const d = document.createElement('div'); d.className = "pred";
-          const l = document.createElement('div'); l.textContent = p.className;
-          const c = document.createElement('div'); c.textContent = (p.probability*100).toFixed(1) + "%";
-          d.appendChild(l); d.appendChild(c);
-          uploadResults.appendChild(d);
-        });
-      } catch (err) {
-        console.error("Upload prediction error:", err);
-        uploadResults.innerHTML = `<div style="color:crimson">Prediction failed (see console).</div>`;
-      }
+      const file = e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      preview.src = url;
+      resultsDiv.innerHTML = `<div class="small">Image selected — click “Predict”.</div>`;
     });
 
     clearBtn.addEventListener('click', () => {
-      preview.src = "/mnt/data/3706cbb5-47a7-48f0-9ea2-4f5d3c088184.png";
+      preview.src = "";
       imageUpload.value = "";
-      predictUploadBtn.disabled = true;
-      uploadResults.innerHTML = "";
+      resultsDiv.innerHTML = "";
     });
 
-    startCamBtn.addEventListener('click', async ()=>{ await startWebcam(); runPredictionLoop(); });
-    stopCamBtn.addEventListener('click', ()=>{ stopWebcam(); });
-    switchBtn.addEventListener('click', async ()=>{ await switchCamera(); runPredictionLoop(); });
+    predictBtn.addEventListener('click', async () => {
+      if (!model) {
+        resultsDiv.innerHTML = `<div style="color:red">Model not loaded.</div>`;
+        return;
+      }
+      if (!preview.src) {
+        resultsDiv.innerHTML = `<div style="color:red">No image to predict.</div>`;
+        return;
+      }
+      resultsDiv.innerHTML = `<div class="small">Predicting…</div>`;
+      try {
+        const predictions = await model.predict(preview, false);
+        predictions.sort((a, b) => b.probability - a.probability);
+        resultsDiv.innerHTML = "";
+        predictions.slice(0, 3).forEach(pred => {
+          const row = document.createElement('div');
+          row.className = 'pred';
+          const label = document.createElement('div');
+          label.textContent = pred.className;
+          const prob = document.createElement('div');
+          prob.textContent = (pred.probability * 100).toFixed(1) + '%';
+          row.appendChild(label);
+          row.appendChild(prob);
+          resultsDiv.appendChild(row);
+        });
+      } catch (err) {
+        resultsDiv.innerHTML = `<div style="color:red">Prediction error.</div>`;
+        console.error(err);
+      }
+    });
 
-    // init
-    (async ()=>{ await loadLocalModel(); })();
+    loadModelBtn.addEventListener('click', loadModel);
 
-    // cleanup
-    window.addEventListener('beforeunload', ()=>{ stopWebcam(); });
   </script>
 </body>
 </html>
